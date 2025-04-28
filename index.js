@@ -17,35 +17,16 @@ import productRouter from "./route/product.route.js";
 import cartRouter from "./route/cart.route.js";
 import addressRouter from "./route/address.route.js";
 import orderRouter from "./route/order.route.js";
-import http from "http";
-import { Server } from "socket.io";
 import vendorRouter from "./route/vendor.route.js";
 
 const app = express();
-const server = http.createServer(app);
 
-const io = new Server(server, {
-  cors: {
-    origin: "https://pinoufe-frontend.vercel.app", // <-- ici ton frontend vercel
-    methods: ["GET", "POST"],
-    credentials: true
-  }
-});
-
-// WebSocket events
-io.on("connection", (socket) => {
-  console.log("Un utilisateur est connecté via WebSocket");
-
-  socket.on("disconnect", () => {
-    console.log("Un utilisateur est déconnecté");
-  });
-});
-
-// Other server settings
+// Compatibilité ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-app.use("/uploads", express.static(path.join(path.resolve(), "uploads")));
+// Servir les fichiers du dossier 'uploads' statiquement
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 const allowedOrigins = [
   "http://localhost:5173",
@@ -85,8 +66,9 @@ app.use("/api/order", orderRouter);
 app.use("/api/vendor", vendorRouter);
 
 // Database + Server
+const PORT = process.env.PORT || 8080;
 connectDB().then(() => {
-  server.listen(process.env.PORT || 8080, () => {
-    console.log(`Le serveur est en écoute sur le port ${process.env.PORT || 8080}`);
+  app.listen(PORT, () => {
+    console.log(`🚀 Le serveur est en écoute sur le port ${PORT}`);
   });
 });
